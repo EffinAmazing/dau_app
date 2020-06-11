@@ -43,9 +43,9 @@ view: dau {
           count(distinct case when date_diff(d.day, a.day, day) < 7 then a.day end) as days_active_7d_window,
           count(distinct case when date_diff(d.day, a.day, day) < 28 then a.day end) as days_active_28d_window
         from daily_user_matrix as d
-          left join activity a on a.user_id = d.user_id
+          left join daily_user_activity a on a.user_id = d.user_id
         where a.day <= d.day
-          and a.day >= date_add(d.day, interval -30 day)
+          --and a.day >= date_add(d.day, interval -30 day)
         group by 1,2,3,4,5
     ;;
   }
