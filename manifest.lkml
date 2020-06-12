@@ -1,4 +1,4 @@
 
 constant: segment_schema_name {
-  value: "shopify_littledata"
+  value: "utm_builder_production_web_utm_io"
 }

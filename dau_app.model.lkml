@@ -1,4 +1,4 @@
-connection: "st"
+connection: "utm"
 
 include: "*.view.lkml"
 
