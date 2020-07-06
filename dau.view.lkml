@@ -3,7 +3,7 @@ view: dau {
     sql:
       with
       daily_user_activity as (
-      --roll up all activity to one row per day for each visitor (when they are active on that day)
+      --roll up all activity to one row per day for each user (when they trigger the chosen event on that day)
         select
           user_id,
           date(timestamp) as day
@@ -12,7 +12,7 @@ view: dau {
         group by 1, 2
       ),
       active_users as (
-      --create table of unique users
+      --create table of unique users and assign first and last active day
         select
           user_id,
           min(day) as first_active_day,
@@ -22,6 +22,7 @@ view: dau {
       ),
       daily_user_matrix as (
       --create one row per user/day combination using a cross join
+      --only create rows for users starting on their first active day and forward
         select
           d.day,
           u.user_id,
@@ -30,9 +31,8 @@ view: dau {
           date_diff(d.day, u.first_active_day, day) as days_since_first_active
         from ${days.SQL_TABLE_NAME} as d, active_users as u
         where d.day >= u.first_active_day
-          --and d.day <= u.last_active_day
       )
-      --join all activity to daily user matrix to assign days_since_last_active
+      --join all activity to daily user matrix to assign days_since_last_active and active days in 7 and 28 day windows
         select
           d.day,
           d.user_id,
@@ -45,7 +45,6 @@ view: dau {
         from daily_user_matrix as d
           left join daily_user_activity a on a.user_id = d.user_id
         where a.day <= d.day
-          --and a.day >= date_add(d.day, interval -30 day)
         group by 1,2,3,4,5
     ;;
   }
@@ -56,7 +55,11 @@ view: dau {
 
   parameter: event {
     type: string
-    suggestions: ["order_completed", "product_viewed", "product_added"]
+    suggestions: [
+      "page_viewed",
+      "copied_link",
+      "login"
+    ]
   }
 
   #
@@ -84,19 +87,31 @@ view: dau {
     sql: timestamp(${TABLE}.day) ;;
   }
 
-  dimension: first_active_day {
-    type: date
+  dimension_group: first_active {
+    timeframes: [date, week, month]
+    type: time
     sql: timestamp(${TABLE}.first_active_day) ;;
   }
 
-  dimension: last_active_day {
-    type: date
+  dimension_group: last_active {
+    timeframes: [date, week, month]
+    type: time
     sql: timestamp(${TABLE}.last_active_day) ;;
   }
 
   dimension: days_since_first_active {
     type: number
     sql: ${TABLE}.days_since_first_active ;;
+  }
+
+  dimension: 7_day_windows_since_first_active {
+    type: number
+    sql: floor(${days_since_first_active}/7.00) ;;
+  }
+
+  dimension: 28_day_windows_since_first_active {
+    type: number
+    sql: floor(${days_since_first_active}/28.00) ;;
   }
 
   dimension: days_since_last_active {
@@ -112,6 +127,13 @@ view: dau {
   dimension: days_active_28d_window {
     type: number
     sql: ${TABLE}.days_active_28d_window ;;
+  }
+
+  dimension: days_active_28d_tier {
+    type: tier
+    style: integer
+    tiers: [1,2,3,7,14,21]
+    sql: ${days_active_28d_window} ;;
   }
 
 
@@ -189,6 +211,27 @@ view: dau {
       field: days_since_first_active
       value: "<28"
     }
+  }
+
+  measure: percent_new_dau {
+    type: number
+    label: "% New DAU"
+    value_format_name: percent_0
+    sql: ${new_dau}/${dau} ;;
+  }
+
+  measure: percent_new_wau {
+    type: number
+    label: "% New WAU"
+    value_format_name: percent_0
+    sql: ${new_wau}/${wau} ;;
+  }
+
+  measure: percent_new_mau {
+    type: number
+    label: "% New MAU"
+    value_format_name: percent_0
+    sql: ${new_mau}/${mau} ;;
   }
 
 }
