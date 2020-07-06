@@ -732,7 +732,7 @@
   - name: Active Event
     title: Active Event
     type: field_filter
-    default_value: '"page_viewed"'
+    default_value:
     allow_multiple_values: true
     required: false
     model: dau_app

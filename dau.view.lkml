@@ -56,9 +56,9 @@ view: dau {
   parameter: event {
     type: string
     suggestions: [
-      "page_viewed",
-      "copied_link",
-      "login"
+      "DID_SOMETHING",
+      "USED_FEATURE",
+      "OPENED_APP"
     ]
   }
 

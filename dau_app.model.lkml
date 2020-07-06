@@ -1,6 +1,7 @@
 connection: "utm"
 
 include: "*.view.lkml"
+include: "dau_app.dashboard.lookml"
 
 explore: dau {
   label: "DAU"
