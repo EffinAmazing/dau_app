@@ -8,7 +8,7 @@ view: dau {
           user_id,
           date(timestamp) as day
         from ${tracks.SQL_TABLE_NAME}
-        where event = {% parameter event %}
+        where {% condition event %} event {% endcondition %}
         group by 1, 2
       ),
       active_users as (
@@ -50,10 +50,10 @@ view: dau {
   }
 
   #
-  # PARAMETERS
+  # FILTER
   #
 
-  parameter: event {
+  filter: event {
     type: string
     suggestions: [
       "DID_SOMETHING",
