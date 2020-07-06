@@ -1,4 +1,4 @@
 
 constant: segment_schema_name {
-  value: "utm_builder_production_app"
+  value: "ADD_SEGMENT_SCHEMA_NAME_HERE"
 }
